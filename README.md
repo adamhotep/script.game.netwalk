@@ -1,5 +1,7 @@
 ## The Game Netwalk
 
+![netwalk logo](../../raw/master/resources/icon.png)
+
 Netwalk is a puzzle-like game where you have to rotate tiles.
 Your goal is to connect all terminals to the server.
 
