@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<addon id="script.game.netwalk" name="Netwalk Game" version="0.0.5" provider-name="Tristan Fischer (sphere@dersphere.de)">
+<addon id="script.game.netwalk" name="Netwalk Game" version="0.0.7" provider-name="Tristan Fischer (sphere@dersphere.de)">
     <requires>
-        <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="xbmc.python" version="3.0.0"/>
     </requires>
-    <extension point="xbmc.python.script" library="game.py"/>
+    <extension point="xbmc.python.script" library="game.py">
+        <provides>game</provides>
+    </extension>
     <extension point="xbmc.addon.metadata">
         <language/>
         <platform>all</platform>
@@ -40,5 +42,9 @@
         <description lang="pt_BR">NetWalk é um jogo de quebra-cabeça como onde você tem que girar blocos. [CR] Seu objetivo é conectar todos os terminais para o servidor. [CR] [CR] Veja ajuda do jogo para mais informações.</description>
         <description lang="sv">Netwalk är ett pussel-liknande spel där du roterar brickor.[CR]Ditt mål är att ansluta alla terminaler till servern.[CR][CR]Se hjälpen för mer information.</description>
         <description lang="zh">网络漫步是一个旋转管线的解迷类游戏。[CR]你的目标是将所有终端连接到服务器。[CR][CR]更多信息见游戏中的介绍。</description>
+        <assets>
+            <icon>resources/icon.png</icon>
+            <fanart>resources/fanart.jpg</fanart>
+        </assets>
     </extension>
 </addon>

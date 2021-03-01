@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-#     Copyright (C) 2013 Tristan Fischer (sphere@dersphere.de)
+#    Copyright (C) 2013 Tristan Fischer (sphere@dersphere.de)
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -20,20 +20,21 @@
 import os
 import random
 import time
-import thread
+import _thread
 import string
 import sys
 
 import xbmc
 import xbmcaddon
 import xbmcgui
+import xbmcvfs
 
 addon = xbmcaddon.Addon()
 
 ADDON_NAME = addon.getAddonInfo('name')
-ADDON_PATH = addon.getAddonInfo('path').decode('utf-8')
+ADDON_PATH = addon.getAddonInfo('path')
 MEDIA_PATH = os.path.join(
-    xbmc.translatePath(ADDON_PATH),
+    xbmcvfs.translatePath(ADDON_PATH),
     'resources',
     'skins',
     'default',
@@ -91,7 +92,7 @@ def _(string_id):
 
 def log(msg):
     xbmc.log('[ADDON][%s] %s' % (ADDON_NAME, msg.encode('utf-8')),
-             level=xbmc.LOGNOTICE)
+             level=xbmc.LOGINFO)
 
 
 class Tile(object):
@@ -131,19 +132,19 @@ class Tile(object):
 
     def build_controls(self):
         self.button_control = xbmcgui.ControlButton(
-            x=self._x_position,
-            y=self._y_position,
-            width=self._width,
-            height=self._height,
+            x=int(self._x_position),
+            y=int(self._y_position),
+            width=int(self._width),
+            height=int(self._height),
             label='',
             focusTexture=get_image('selected.png'),
             noFocusTexture=get_image('not_selected.png'),
         )
         self.image_control = xbmcgui.ControlImage(
-            x=self._x_position,
-            y=self._y_position,
-            width=self._width,
-            height=self._height,
+            x=int(self._x_position),
+            y=int(self._y_position),
+            width=int(self._width),
+            height=int(self._height),
             filename=get_image('empty.png'),
         )
 
@@ -163,7 +164,7 @@ class Tile(object):
     def rotate_cw(self):
         # shift all bits to the right
         if not self._is_locked:
-            new_connections = self.connections << 1
+            new_connections = int(self.connections) << 1
             if new_connections > 15:
                 new_connections -= 15
             self.connections = new_connections
@@ -172,8 +173,8 @@ class Tile(object):
     def rotate_ccw(self):
         # shift all bits to the left
         if not self._is_locked:
-            new_connections = self.connections >> 1
-            if self.connections & UP:
+            new_connections = int(self.connections) >> 1
+            if int(self.connections) & UP:
                 new_connections += LEFT
             self.connections = new_connections
             return True
@@ -244,7 +245,7 @@ class Tile(object):
 
     @property
     def num_connections(self):
-        num = len([d for d in DIRECTIONS if d & self.connections])
+        num = len([d for d in DIRECTIONS if d & int(self.connections)])
         return num
 
     def __str__(self):
@@ -267,8 +268,8 @@ class Grid(object):
     def generate_tiles(self):
         tile_width = self._width / self._columns
         tile_height = self._height / self._rows
-        for row in xrange(self._rows):
-            for column in xrange(self._columns):
+        for row in range(self._rows):
+            for column in range(self._columns):
                 tile = Tile(row, column, self, tile_width, tile_height)
                 self._tiles.append(tile)
 
@@ -312,7 +313,7 @@ class Grid(object):
         self._target_moves = 0
         for tile in self._tiles:
             movement = random.choice([tile.rotate_cw, tile.rotate_ccw])
-            for turn in xrange(random.randint(0, 2)):
+            for turn in range(random.randint(0, 2)):
                 movement()
                 self._target_moves += 1
 
@@ -337,10 +338,10 @@ class Grid(object):
             active_tile.is_connected = True
             for direction in DIRECTIONS:
                 # check if this tile has a connection to this direction
-                if active_tile.connections & direction:
+                if int(active_tile.connections) & int(direction):
                     # check if the neighbor has an opposite connection
                     neighbor = active_tile.neighbor_at(direction)
-                    if neighbor.connections & opposite(direction):
+                    if int(neighbor.connections) & int(opposite(direction)):
                         # if the neighbor wasn't already checked, do that later
                         if neighbor not in visited_tiles:
                             to_visit_tiles.add(neighbor)
@@ -385,12 +386,11 @@ class Game(xbmcgui.WindowXML):
     CONTROL_ID_EXIT = 3006
     CONTROL_ID_GAME_ID = 3007
     AID_EXIT = [9, 13]  # exit the game
-    AID_ENTER = [7, 100]  # rotate the selected tile clockwise
-    AID_BACK = [10]  # rotate the selected tile counter clockwise
-    AID_INFO = [11]  # lock the selected tile
-    AID_SPACE = [12]  # lock the selected tile
-    AID_MIDDLE_MOUSE = [102]  # lock the selected tile
-    AID_LOCK = AID_INFO + AID_SPACE + AID_MIDDLE_MOUSE
+    AID_ENTER = [7, 34, 100]  # rotate the selected tile counter-clockwise
+    BID_CCW = [61657]  # rotate the selected tile counter-clockwise (caps)
+    AID_BACK = [10, 92]  # rotate the selected tile clockwise
+    AID_LOCK = [11, 12, 102, 117]  # lock the selected tile
+    BID_LOCK = [61650, 61651]  # lock the selected tile (left/right shift)
 
     def onInit(self):
         # init vars
@@ -409,16 +409,19 @@ class Game(xbmcgui.WindowXML):
         self.grid.generate_tiles()
         self.add_tile_controls()
         # start the timer thread
-        thread.start_new_thread(self.timer_thread, ())
+        _thread.start_new_thread(self.timer_thread, ())
         # start the game
         self.start_game()
 
     def onAction(self, action):
         action_id = action.getId()
+        button_code = action.getButtonCode()
+        #log("action id = %d" % action_id)  # uncomment to log keypress codes
+        #log("button code = %d" % button_code)  # uncomment to log button codes
         focus_id = self.getFocusId()
         if self._game_in_progress and focus_id in self._tile_button_ids:
             tile = self._tile_button_ids[self.getFocusId()]
-            if action_id in self.AID_ENTER:
+            if action_id in self.AID_ENTER or button_code in self.BID_CCW:
                 if not tile.is_locked:
                     tile.rotate_ccw()
                     self.movement_done()
@@ -426,7 +429,7 @@ class Game(xbmcgui.WindowXML):
                 if not tile.is_locked:
                     tile.rotate_cw()
                     self.movement_done()
-            elif action_id in self.AID_LOCK:
+            elif action_id in self.AID_LOCK or button_code in self.BID_LOCK:
                 tile.is_locked = not tile.is_locked
             if self.grid.all_correct:
                 self.game_over()
@@ -453,7 +456,7 @@ class Game(xbmcgui.WindowXML):
         if not game_id:
             random.seed()
             game_id = ''.join(
-                random.choice(string.ascii_uppercase) for n in xrange(15)
+                random.choice(string.ascii_uppercase) for n in range(15)
             )
         self._game_id = game_id
         random.seed(self._game_id)
@@ -469,7 +472,7 @@ class Game(xbmcgui.WindowXML):
         self.game_id_control.setLabel(str(self._game_id))
 
     def timer_thread(self):
-        while not xbmc.abortRequested:
+        while not xbmc.Monitor().abortRequested():
             if self._game_in_progress:
                 game_time = time.time() - self._start_time
                 self.time_control.setLabel(str(int(game_time)))

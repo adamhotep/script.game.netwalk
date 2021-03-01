@@ -57,7 +57,12 @@ msgid "Exit?"
 msgstr ""
 
 msgctxt "#32010"
-msgid "[B]Controls[/B][CR]- Focus tile: MOUSE-HOVER, UP, RIGHT, LEFT, DOWN[CR]- Turn focused tile clockwise: RIGHTCLICK, ESC, BACK[CR]- Turn focused tile counter-clockwise: LEFTCLICK, ENTER[CR]- Lock focused tile: MIDDLECLICK, INFO, SPACE[CR]- Exit Game: STOP, EXIT-BUTTON[CR]"
+msgid "[B]Controls[/B][CR]"
+"- Focus tile: MOUSE-HOVER, UP, RIGHT, LEFT, DOWN[CR]"
+"- Turn focused tile clockwise: RIGHTCLICK, ESC, BACK[CR]"
+"- Turn focused tile counter-clockwise: LEFTCLICK, ENTER, CAPS[CR]"
+"- Lock focused tile: MIDDLECLICK, INFO, SPACE, SHIFT[CR]"
+"- Exit Game: STOP, EXIT-BUTTON[CR]"
 msgstr ""
 
 msgctxt "#32011"
